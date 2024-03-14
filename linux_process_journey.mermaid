@@ -1,0 +1,31 @@
+sequenceDiagram
+    participant S as Start
+    participant P as Parent Process
+    participant C as Child Process
+    participant SCH as Scheduler
+    participant SYS as System Calls
+
+    S->>P: Process Creation
+    P->>C: fork() called
+    Note over C: Child Process Created
+    C->>C: exec() to load new program
+    C->>SCH: Enters Scheduler
+    SCH->>C: Running
+    alt Interruptible Sleep
+        C->>SYS: Sleep on I/O
+        SYS->>C: Woken by event/signal
+    else Uninterruptible Sleep
+        C->>SYS: Sleep on condition
+        SYS->>C: Condition met
+    end
+    C->>C: Continues Execution
+    C->>C: Checks for termination
+    C->>P: exit() called
+    P->>P: wait()/waitpid() for C
+    P->>SYS: Reaping and cleanup
+    Note over C: If not reaped
+    C->>C: Becomes Zombie
+    Note over C: If parent exits first
+    C->>P: Becomes Orphan
+    P->>C: Adopted by init process
+

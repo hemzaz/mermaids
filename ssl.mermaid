@@ -1,0 +1,18 @@
+sequenceDiagram
+    participant C as Client
+    participant S as Server
+
+    C->>+S: ClientHello (Supported SSL versions, cipher suites, random number)
+    S->>+C: ServerHello (Chosen SSL version, cipher suite, random number)
+    S->>C: Certificate (Server's public key certificate)
+    S->>C: ServerKeyExchange (Optional, for Diffie-Hellman)
+    S->>C: ServerHelloDone
+    C->>S: ClientKeyExchange (Pre-master secret encrypted with server's public key)
+    C->>S: ChangeCipherSpec (Switch to encrypted communication)
+    C->>S: Finished (Verify data integrity and encryption)
+    S->>C: ChangeCipherSpec (Switch to encrypted communication)
+    S->>C: Finished (Verify data integrity and encryption)
+    Note over C,S: Encrypted SSL Session Established
+
+    C->>S: Encrypted Data (Client to Server communication)
+    S->>C: Encrypted Data (Server to Client communication)

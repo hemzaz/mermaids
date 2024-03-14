@@ -1,0 +1,36 @@
+sequenceDiagram
+    participant User as User Device
+    participant Client as VPN Client
+    participant Internet as Internet
+    participant Server as VPN Server
+    participant Kernel as Destination Kernel
+    participant App as Destination Application
+
+    %% VPN Connection Establishment
+    User->>Client: Initiate VPN connection
+    Client->>Server: Request connection
+    Server->>Client: Authenticate user
+    Client->>Server: Establish encryption
+    Note over Client,Server: VPN Tunnel Established
+
+    %% Data Transmission from User to Destination
+    User->>Client: Send data to App
+    Client->>Client: Encrypt and encapsulate data
+    Client->>Internet: Transmit data
+    Internet->>Server: Route data
+    Server->>Server: Decrypt and decapsulate data
+    Server->>Kernel: Send to App
+    Kernel->>App: Receive data
+
+    %% Data Transmission from Destination to User
+    App->>Kernel: Send data to User
+    Kernel->>Server: Encapsulate and encrypt data
+    Server->>Internet: Transmit data
+    Internet->>Client: Route data
+    Client->>Client: Decrypt and decapsulate data
+    Client->>User: Deliver data
+
+    %% VPN Tunnel Teardown (Optional)
+    User->>Client: Disconnect VPN
+    Client->>Server: Terminate session
+    Note over Client,Server: VPN Tunnel Closed

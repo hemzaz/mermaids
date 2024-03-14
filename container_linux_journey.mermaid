@@ -1,0 +1,37 @@
+sequenceDiagram
+    participant User as User/Orchestration System
+    participant CLI as Docker/OCI CLI
+    participant Daemon as Docker Daemon/Container Runtime
+    participant Registry as Image Registry
+    participant Kernel as Linux Kernel
+    participant FS as File System
+    participant Container as Running Container
+
+    User->>CLI: Create Dockerfile/OCI Instruction File
+    CLI->>Daemon: Build Image Command
+    Daemon->>Registry: Pull Base Image (if not local)
+    Registry->>Daemon: Return Base Image
+    Daemon->>FS: Create Union FS Layers
+    Daemon->>Daemon: Execute Build Instructions (Layers)
+    Daemon->>Registry: Store Final Image
+    User->>Daemon: Request Start Container
+    Daemon->>Kernel: Create PID Namespace
+    Daemon->>Kernel: Create NET Namespace
+    Daemon->>Kernel: Create IPC Namespace
+    Daemon->>Kernel: Create MNT Namespace
+    Daemon->>Kernel: Create UTS Namespace
+    Daemon->>Kernel: Create USER Namespace
+    Daemon->>Kernel: Create CGROUP Namespace
+    Daemon->>Kernel: Create cgroups (Resource Limits)
+    Kernel->>FS: Setup Union FS for Container
+    Daemon->>Container: Start Container's Init Process
+    Kernel->>Container: Isolate Container in Namespaces
+    Container->>Container: Execute Application in Isolation
+    User->>Daemon: Request Stop Container
+    Container->>Daemon: Signal Container Stop
+    Daemon->>Kernel: Reclaim cgroups Resources
+    FS->>Daemon: Cleanup Union FS Layers
+    Daemon->>User: Confirm Container Stopped
+
+    %% Note
+    Note over User,Container: Linux Container Lifecycle with Namespace Detail

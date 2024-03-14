@@ -1,0 +1,34 @@
+sequenceDiagram
+    participant S as Start
+    participant P as Parent Process
+    participant T1 as Thread 1
+    participant Tn as Thread N
+    participant SCH as Scheduler
+    participant SYS as System Calls
+
+    S->>P: Process Creation
+    P->>P: fork() called
+    Note over P: Process with multiple threads
+    P->>T1: pthread_create()
+    P->>Tn: pthread_create()
+    Note over T1,Tn: Threads Created
+    T1->>SCH: Enters Scheduler
+    Tn->>SCH: Enters Scheduler
+    SCH->>T1: Running
+    SCH->>Tn: Running
+    alt Thread 1 Sleep
+        T1->>SYS: Sleep on I/O
+        SYS->>T1: Woken by event/signal
+    else Thread N Sleep
+        Tn->>SYS: Sleep on condition
+        SYS->>Tn: Condition met
+    end
+    T1->>T1: Continues Execution
+    Tn->>Tn: Continues Execution
+    T1->>P: pthread_exit()
+    Tn->>P: pthread_exit()
+    P->>P: wait() for threads to exit
+    Note over T1,Tn: Threads can synchronize with mutexes, semaphores, etc.
+    P->>P: exit() called
+    P->>SYS: Reaping and cleanup
+    Note over P: Process terminates

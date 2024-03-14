@@ -1,0 +1,22 @@
+sequenceDiagram
+    participant P as Power On
+    participant B as BIOS/UEFI
+    participant S as Boot Device (MBR/GPT)
+    participant L as GRUB/LILO
+    participant K as Linux Kernel
+    participant I as Init/Systemd
+    participant R as Runlevel Scripts/Services
+    participant DM as Display Manager
+
+    P->>B: Initialize hardware
+    B->>S: Read MBR/GPT
+    S->>L: Execute Bootloader
+    L->>K: Load Kernel into memory
+    K->>I: Start Init/Systemd
+    I->>R: Execute Runlevel/Target Units
+    R->>I: Services started
+    I->>DM: Start Display Manager/Login
+    DM->>I: User Login
+
+    %% Note
+    Note over P,DM: Linux Boot Process

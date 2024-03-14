@@ -1,0 +1,52 @@
+sequenceDiagram
+    participant User as User
+    participant Browser as User's Browser
+    participant SP as Service Provider
+    participant IdP as Identity Provider
+
+    %% Initial User Request for Service
+    User->>Browser: Navigate to Service
+    Browser->>SP: Access Service Request
+
+    %% SP Initiates SAML Authentication Process
+    SP->>Browser: Redirect with SAML Authentication Request
+    Browser->>IdP: Forward SAML Authentication Request
+
+    %% User Authenticates with IdP
+    IdP->>Browser: Display Login Page
+    Browser->>User: Prompt for Credentials
+    User->>Browser: Enter Credentials
+    Browser->>IdP: Submit Credentials
+    IdP->>IdP: Validate Credentials
+
+    %% IdP Generates SAML Assertion
+    alt Credentials Valid
+        IdP->>IdP: Generate SAML Assertion (User Info & Authn Statement)
+    else Credentials Invalid
+        IdP->>Browser: Display Error
+        Browser->>User: Show Authentication Failure
+        end
+
+    %% Assertion Sent to SP Through Browser
+    IdP->>Browser: Redirect with SAML Assertion
+    Browser->>SP: Forward SAML Assertion
+
+    %% SP Processes the Assertion
+    SP->>SP: Extract Assertion
+    SP->>SP: Validate Signature & Assertion Content
+    alt Signature and Assertion Valid
+        SP->>SP: Create/Update User Session
+    else Signature or Assertion Invalid
+        SP->>Browser: Display Error
+        Browser->>User: Show Access Denied
+        end
+
+    %% Grant Access if Valid
+    alt User Session Created/Updated Successfully
+        SP->>Browser: Grant Access to Service
+        Browser->>User: Display Service Content
+    end
+
+    %% Note
+    Note over User,IdP: Authentication Phase
+    Note over SP,User: Authorization & Session Creation Phase

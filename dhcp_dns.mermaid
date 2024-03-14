@@ -1,0 +1,30 @@
+sequenceDiagram
+    participant C as Client
+    participant DH as DHCP Server
+    participant DNS as DNS Server
+
+    Note over C,DH: Connection starts
+    C->>+DH: DHCPDISCOVER (UDP, src=68, dst=67)
+    Note over DH: DHCP Server selects IP
+    DH->>+C: DHCPOFFER (Offered IP, Lease Time, DNS Info)
+    C->>+DH: DHCPREQUEST (Requested IP, Server ID)
+    DH->>+C: DHCPACK (IP, Lease Time, DNS Info)
+    Note over C: IP Configuration Complete
+
+    Note over DH,DNS: DNS Update Begins
+    DH->>+DNS: DNS Update Request (A Record for Client FQDN)
+    alt DNS Secure Update
+        DNS->>DH: Challenge for Authentication
+        DH->>DNS: Response with Credentials
+    end
+    DNS->>DH: DNS Update Response (Success)
+    opt Reverse DNS Update
+        DH->>+DNS: DNS Update Request (PTR Record)
+        DNS->>DH: DNS Update Response (Success)
+    end
+    Note over C,DNS: FQDN and IP Resolution Ready
+
+    opt Client Verifies DNS Update
+        C->>+DNS: DNS Query (FQDN)
+        DNS->>+C: DNS Response (Client IP)
+    end

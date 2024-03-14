@@ -1,0 +1,16 @@
+sequenceDiagram
+    participant T as Task
+    participant SC as System Call Interface
+    participant S as Scheduler
+    participant C as CPU
+
+    T->>SC: sleep() / sched_yield()
+    SC->>S: Invoke schedule()
+    Note over S: Scheduler selects next task
+    S->>T: Context switch
+    T->>C: Executes on CPU
+    T->>SC: sleep() / wait() / exit()
+    SC->>S: Update task state
+    S->>S: Load balancing
+    S->>T: Context switch (if required)
+    T->>C: Resumes execution

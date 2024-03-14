@@ -1,0 +1,26 @@
+graph TD;
+    A(Start: Run Java Program) --> B(Write Java Source Code)
+    B --> C(Compile Source Code)
+    C --> D{Compilation Success?}
+    D -- Yes --> E(Generate Bytecode)
+    D -- No --> F(Report Compilation Errors)
+    E --> G(Load Class into JVM)
+    G --> H(Verify Bytecode)
+    H --> I{Bytecode Verification Passed?}
+    I -- Yes --> J(Execute Bytecode)
+    I -- No --> K(Report Verification Error)
+    J --> L{System/Library Calls?}
+    L -- Yes --> M(Invoke System/Library Calls)
+    L -- No --> N{New Objects?}
+    N -- Yes --> O(Allocate Memory)
+    N -- No --> P{Garbage Collection Needed?}
+    P -- Yes --> Q(Perform Garbage Collection)
+    P -- No --> R{End of Program?}
+    R -- Yes --> S(Cleanup and Exit)
+    R -- No --> J
+    M --> J
+    O --> J
+    Q --> J
+
+    classDef flow fill:#fffff,stroke:#333,stroke-width:2px;
+    class A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S flow;

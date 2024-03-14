@@ -1,0 +1,26 @@
+graph TD;
+    A(Start: Run Python Script) --> B(Parse Source Code)
+    B --> C(Syntax Check)
+    C --> D{Syntax Error?}
+    D -- Yes --> E[Report Syntax Error and Exit]
+    D -- No --> F(Compile to Bytecode)
+    F --> G(Bytecode Up-to-Date Check)
+    G --> H{Is Bytecode Up-to-Date?}
+    H -- No --> I(Recompile Source to Bytecode)
+    H -- Yes --> J(Load Bytecode into PVM)
+    I --> J
+    J --> K(Execute Bytecode in PVM)
+    K --> L{System Calls Needed?}
+    L -- Yes --> M(Perform System Calls)
+    L -- No --> N{API Calls Needed?}
+    M --> N
+    N -- Yes --> O(Invoke Python/C API)
+    N -- No --> P{End of Program?}
+    O --> P
+    P -- Yes --> Q(Cleanup and Free Resources)
+    P -- No --> K
+    Q --> R(Return Exit Code to OS)
+    R --> S(End)
+
+    classDef flow fill:#fffff,stroke:#333,stroke-width:2px;
+    class A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S flow;

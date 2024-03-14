@@ -1,0 +1,32 @@
+%%{init: {'theme':'base', 'themeVariables': { 'fontSize': '20px', 'primaryTextColor': '#fff', 'primaryColor': '#000', 'lineColor': '#000', 'secondaryColor': '#ffcb05', 'tertiaryColor': '#ffcb05', 'textColor': '#000', }}}%%
+sequenceDiagram
+    participant User as User
+    participant Kubectl as kubectl
+    participant API_Server as API Server
+    participant Etcd as etcd
+    participant Scheduler as Scheduler
+    participant Kubelet as Kubelet
+    participant Container_Runtime as Container Runtime
+
+    Note over User,Kubectl: User Authentication
+    User->>Kubectl: kubectl apply -f <manifest.yaml>
+    Kubectl->>API_Server: Authenticate and Submit manifest
+    API_Server->>Etcd: Validate manifest
+    Etcd-->>API_Server: Update stored state
+    Note over API_Server,Scheduler: API Server Processing
+    API_Server->>Scheduler: Notify of unscheduled pod
+    Scheduler->>API_Server: Node selected for pod
+    Note over Kubelet: Kubelet Activation
+    API_Server->>Kubelet: Assign pod to node
+    Kubelet->>Container_Runtime: Pull image(s)
+    alt Image Pull Successful
+        Container_Runtime-->>Kubelet: Image(s) pulled successfully
+        Kubelet->>Container_Runtime: Start container(s)
+        Container_Runtime-->>Kubelet: Container(s) running
+        Kubelet-->>API_Server: Update pod status to Running
+    else Image Pull Failure
+        Container_Runtime-->>Kubelet: Image pull failed
+        Kubelet-->>API_Server: Log error, retry image pull
+    end
+    Note over API_Server: Pod and Container Running
+    API_Server-->>User: Confirm pod and container are running

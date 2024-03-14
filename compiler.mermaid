@@ -1,0 +1,27 @@
+graph TD;
+    A(Start: Source Code) --> B(Preprocessing)
+    B --> C(Lexical Analysis)
+    C --> D(Syntax Analysis)
+    D --> E(Semantic Analysis)
+    E --> F(Intermediate Code Generation)
+    F --> G(Optimization)
+    G --> H(Code Generation)
+    H --> I(Assembly)
+    I --> J(Linking)
+    J --> K(Executable Program)
+    %% Optional Details
+    B -.-> L{Macros Expansion}
+    B -.-> M{Conditional Compilation}
+    B -.-> N{File Inclusion}
+    D -.-> O{"Abstract Syntax Tree (AST) Construction"}
+    E -.-> P{Type Checking}
+    E -.-> Q{Scope Resolution}
+    G -.-> R{Machine-Independent Optimizations}
+    G -.-> S{Machine-Dependent Optimizations}
+    H -.-> T{Register Allocation}
+    H -.-> U{Instruction Selection}
+    I -.-> V{Translate to Machine Code}
+    J -.-> W{Resolve External References}
+
+    classDef process fill:#fffff,stroke:#333,stroke-width:2px;
+    class A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W process;
