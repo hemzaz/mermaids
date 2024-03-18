@@ -1,0 +1,67 @@
+graph TD
+    Client(Client) -->|Resolves domain| DNS(DNS)
+    Client -->|Fetches static content| CDN(CDN)
+    Client -->|Connects to| WAF(Web Application Firewall)
+
+    WAF -->|Protects & Rate Limits| APIGWS(API Gateway)
+    APIGWS -->|Routes requests to| LB
+    CDN -->|Serves static assets from S3|S3AWS
+
+    subgraph LoadBalancer
+        LB("Load Balancer")
+    end
+
+    subgraph WS[Web Services]
+        direction TB
+        WebServer1[Web Servers]
+    end
+
+    subgraph Auth[Auth Services]
+        direction TB
+        AuthWorkers[Auth Workers] --> IDP[Auth0]
+    end
+
+    subgraph AS[Async Services]
+        direction TB
+        AsyncWorkerServiceNamespace[Async Worker Service]
+    end
+
+    subgraph API[API Services]
+        direction TB
+        DBWriteAPI[DB Write API Services]
+        DBReadAPI[DB Read API Services]
+        S3ReadAPI[S3 Read API]
+        S3WriteAPI[S3 Write API]
+    end
+
+    subgraph RDS["RDS & NoSQL"]
+        direction TB
+        MemoryCache(Memory Cache) -.-> SQLMasterSlave(SQL Master-Slave)
+        SQLMasterSlave -.-> SQLReadReplicas[SQL Read Replicas]
+        MemoryCache --> Elasticache["Elasticache"]
+        NoSQLDB["NoSQL (Redis)"]
+    end
+
+    subgraph Queue
+        direction TB
+        q["Message Queue"] --> DLQ[Dead Letter Queue]
+    end
+
+    subgraph S3AWS["AWS S3 Object Store"]
+        direction TB
+        S3["Static & Data Buckets"] --> staticContents(AWS S3 Static Contents Bucket)
+        S3 --> dataBucket(AWS S3 Data Bucket)
+    end
+    LB-->|Web Requests| WS[Web Services]
+    LB -->|Auth Requests| Auth[Auth Services]
+    LB -->|Async Requests| AS[Async Services]
+    LB -->|API Requests| API[API Services]
+    AS -->|Utilizes NoSQL| NoSQLDB
+    AS --> |Writes to| Queue
+    Queue --> |Reads from| AS
+    DLQ --> |Manages Failed Messages| AS
+    DBReadAPI --> |Reads from| SQLReadReplicas
+    DBReadAPI --> |Reads from| Elasticache
+    DBWriteAPI -->|Writes to| SQLMasterSlave
+    S3ReadAPI -->|Reads from| S3AWS
+    S3WriteAPI -->|Writes to| S3AWS
