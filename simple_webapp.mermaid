@@ -1,0 +1,19 @@
+graph TD
+    subgraph VPC [Virtual Private Cloud]
+        subgraph PublicSubnets [Public Subnets]
+            WAF(WAF)
+            LB(Load Balancer)
+        end
+        subgraph PrivateSubnets [Private Subnets]
+            TG_FE(Target Group - FE)
+            TG_BE(Target Group - BE)
+            BE(Back End)
+            RDS(Relational Database Service)
+        end
+        WAF --> LB
+        LB --> TG_FE
+        LB --> TG_BE
+        TG_FE --> FE(Front End)
+        TG_BE --> BE
+        BE --> RDS
+    end
