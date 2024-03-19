@@ -7,6 +7,7 @@ Welcome to the **Mermaid Diagrams Repository**! This repository is a treasure tr
 This repository contains the following Mermaid diagrams:
 
 - `compiler.mermaid` - An in-depth look at the compilation process.
+- `complex_web_app.mermaid` - Example System design for a fairly complex web app on the cloud.
 - `container_linux_journey.mermaid` - The lifecycle of a Linux container.
 - `dhcp_dns.mermaid` - The process of how DHCP and DNS interact with a network client.
 - `java_program_journey.mermaid` - A detailed journey of a Java program from compilation to execution.
@@ -18,6 +19,7 @@ This repository contains the following Mermaid diagrams:
 - `python_program_journey.mermaid` - The execution path of a Python program.
 - `saml.mermaid` - The authentication and authorization flow in SAML.
 - `ssl.mermaid` - The SSL handshake and encryption process.
+- `simple_webapp.mermaid` - Simple web app, nothing more.
 - `vpn.mermaid` - How VPNs work, encapsulating data through encrypted tunnels.
 
 ## How to Use
