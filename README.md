@@ -61,27 +61,13 @@ Several options are available:
    echo "<!DOCTYPE html><html><head><script src='https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js'></script></head><body><pre class='mermaid'>$(cat file.mermaid)</pre><script>mermaid.initialize({startOnLoad:true});</script></body></html>" > preview.html
    ```
 
-### Making Changes
-
-When modifying or adding diagrams, please follow the style guide in [CLAUDE.md](./CLAUDE.md) for consistent styling and organization.
-
 ## 🤝 Contributing
 
 Your contributions are welcome! To contribute:
 
 1. **Fork the repository** to your GitHub account
 2. **Create a branch** for your changes
-3. **Make your updates** following the style guide in CLAUDE.md
-4. **Submit a pull request** with a clear description of your changes
-
-## 📝 Style Guide
-
-See [CLAUDE.md](./CLAUDE.md) for detailed styling guidelines, including:
-
-- Theme configuration and color palettes
-- Component visualization standards
-- Diagram organization principles
-- Technical detail requirements
+3. **Submit a pull request** with a clear description of your changes
 
 ## 📜 License
 
