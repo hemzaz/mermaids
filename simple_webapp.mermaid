@@ -1,13 +1,14 @@
-%%{init: {'theme':'default', 'themeVariables': { 
+%%{init: {'theme':'dark', 'themeVariables': { 
     'primaryColor': '#FF9900', 
     'primaryBorderColor': '#E88A00', 
-    'primaryTextColor': '#232F3E',
+    'primaryTextColor': '#fff',
     'secondaryColor': '#232F3E',
     'tertiaryColor': '#527FFF',
-    'lineColor': '#232F3E',
-    'textColor': '#232F3E',
-    'clusterBkg': '#F7F7F7',
-    'clusterBorder': '#DDDDDD'
+    'lineColor': '#CCCCCC',
+    'textColor': '#CCCCCC',
+    'clusterBkg': '#1E1E1E',
+    'clusterBorder': '#444444',
+    'background': '#282a36'
 }}}%%
 
 flowchart TD
@@ -83,20 +84,4 @@ flowchart TD
     BE --> SecretsManager
     SecretsManager -..-> RDS
     
-    %% Style Definitions
-    classDef externalComponent fill:#7AA116,stroke:#5F8700,color:white,stroke-width:2px;
-    classDef securityComponent fill:#DD3522,stroke:#C32F1E,color:white,stroke-width:2px;
-    classDef networkComponent fill:#FF9900,stroke:#E88A00,color:white,stroke-width:2px;
-    classDef computeComponent fill:#527FFF,stroke:#4456AF,color:white,stroke-width:2px;
-    classDef dataComponent fill:#C925D1,stroke:#9B1FA5,color:white,stroke-width:2px;
-    classDef storageComponent fill:#7AA116,stroke:#5F8700,color:white,stroke-width:2px;
-    classDef monitoringComponent fill:#232F3E,stroke:#1A222E,color:white,stroke-width:2px;
-    
-    %% Apply Styles
-    class User,Internet,CloudFront externalComponent
-    class WAF,Bastion,SecretsManager securityComponent
-    class LB,NAT,TG_FE,TG_BE networkComponent
-    class FE,BE computeComponent
-    class RDS,ElastiCache dataComponent
-    class S3 storageComponent
-    class CW monitoringComponent
+    %% No custom styling for better compatibility

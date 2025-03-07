@@ -1,3 +1,14 @@
+%%{init: {'theme':'dark', 'themeVariables': { 
+    'primaryColor': '#E95420', 
+    'primaryBorderColor': '#C4441C', 
+    'primaryTextColor': '#fff',
+    'secondaryColor': '#F58220', 
+    'secondaryBorderColor': '#C25D06',
+    'lineColor': '#CCCCCC', 
+    'textColor': '#CCCCCC',
+    'background': '#282a36'
+}}}%%
+
 graph TD;
     A(Start: Run Java Program) --> B(Write Java Source Code)
     B --> C(Compile Source Code)
@@ -22,5 +33,4 @@ graph TD;
     O --> J
     Q --> J
 
-    classDef flow fill:#fffff,stroke:#333,stroke-width:2px;
-    class A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S flow;
+    %% No custom styling for better compatibility

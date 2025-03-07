@@ -1,11 +1,12 @@
-%%{init: {'theme':'default', 'themeVariables': { 
+%%{init: {'theme':'dark', 'themeVariables': { 
     'fontSize': '20px', 
     'primaryTextColor': '#fff', 
     'primaryColor': '#326CE5', 
-    'lineColor': '#172B4D', 
+    'lineColor': '#CCCCCC', 
     'secondaryColor': '#FFA630', 
     'tertiaryColor': '#28A745', 
-    'textColor': '#172B4D'
+    'textColor': '#CCCCCC',
+    'background': '#282a36'
 }}}%%
 sequenceDiagram
     %% 1. Visual Identifiers with Icons
@@ -17,20 +18,10 @@ sequenceDiagram
     participant Kubelet as 🤖 Kubelet
     participant Container_Runtime as 🐳 Container Runtime
     
-    %% 2. Improve Styling with Classes
-    classDef controlPlane fill:#326CE5,stroke:#2857A4,color:white,stroke-width:2px;
-    classDef dataStore fill:#F58220,stroke:#C25D06,color:white,stroke-width:2px;
-    classDef nodeComponent fill:#28A745,stroke:#176127,color:white,stroke-width:2px;
-    classDef userTool fill:#666666,stroke:#333333,color:white,stroke-width:2px;
-    
-    %% Apply classes to participants
-    class API_Server,Scheduler controlPlane
-    class Etcd dataStore
-    class Kubelet,Container_Runtime nodeComponent
-    class Kubectl userTool
+    %% No custom styling for better compatibility
     
     %% 3. Add Technical Depth with Process Phases
-    rect rgb(230,242,255)
+    rect rgb(20,30,40)
     note over User,Container_Runtime: <b>Kubernetes Application Deployment Flow</b>
     
     %% Phase 1: User Authentication and Validation

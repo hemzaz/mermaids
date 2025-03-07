@@ -1,4 +1,4 @@
-%%{init: {'theme':'default', 'themeVariables': { 
+%%{init: {'theme':'dark', 'themeVariables': { 
     'primaryColor': '#E95420', 
     'primaryBorderColor': '#C4441C', 
     'primaryTextColor': '#fff',
@@ -6,8 +6,9 @@
     'secondaryBorderColor': '#C25D06',
     'tertiaryColor': '#28A745', 
     'tertiaryBorderColor': '#176127',
-    'lineColor': '#772953', 
-    'textColor': '#333333'
+    'lineColor': '#CCCCCC', 
+    'textColor': '#CCCCCC',
+    'background': '#282a36'
 }}}%%
 
 sequenceDiagram
@@ -25,20 +26,10 @@ sequenceDiagram
     participant Services as 🔄 Services
     participant Display as 🖥️ Display Manager
 
-    %% Style Definitions
-    classDef hardwareComponent fill:#E95420,stroke:#C4441C,color:white,stroke-width:2px;
-    classDef bootComponent fill:#F58220,stroke:#C25D06,color:white,stroke-width:2px;
-    classDef kernelComponent fill:#28A745,stroke:#176127,color:white,stroke-width:2px;
-    classDef userSpaceComponent fill:#2C001E,stroke:#772953,color:white,stroke-width:2px;
-    
-    %% Apply styles
-    class Power,BIOS,Disk hardwareComponent
-    class Bootloader bootComponent
-    class Kernel kernelComponent
-    class Init,Services,Display userSpaceComponent
+    %% No custom styling for better compatibility
     
     %% Phase 1: Hardware Initialization
-    rect rgb(255,240,230)
+    rect rgb(40,20,15)
     note over Power,Display: <b>Phase 1: Hardware Initialization</b>
     
     Power->>+BIOS: System power activated
@@ -52,7 +43,7 @@ sequenceDiagram
     end
 
     %% Phase 2: Bootloader Stage
-    rect rgb(255,245,215)
+    rect rgb(40,30,15)
     note over Power,Display: <b>Phase 2: Bootloader Stage</b>
     
     Disk->>+Bootloader: Load bootloader from MBR/GPT
@@ -71,7 +62,7 @@ sequenceDiagram
     end
     
     %% Phase 3: Kernel Initialization
-    rect rgb(240,255,240)
+    rect rgb(15,40,15)
     note over Power,Display: <b>Phase 3: Kernel Initialization</b>
     
     Kernel-->>Kernel: Decompress itself
@@ -88,7 +79,7 @@ sequenceDiagram
     end
     
     %% Phase 4: System Initialization
-    rect rgb(240,248,255)
+    rect rgb(15,25,40)
     note over Power,Display: <b>Phase 4: System Initialization</b>
     
     alt SystemD Init System
@@ -108,7 +99,7 @@ sequenceDiagram
     end
     
     %% Phase 5: User Session
-    rect rgb(245,240,255)
+    rect rgb(30,15,40)
     note over Power,Display: <b>Phase 5: User Session</b>
     
     Display-->>Display: Show login screen

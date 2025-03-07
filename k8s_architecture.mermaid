@@ -1,10 +1,12 @@
-%%{init: {'theme':'default', 'themeVariables': { 
+%%{init: {'theme':'dark', 'themeVariables': { 
     'primaryColor': '#326CE5', 
     'primaryBorderColor': '#2857A4',
     'primaryTextColor': '#fff',
     'secondaryColor': '#F58220',
-    'lineColor': '#172B4D',
-    'tertiaryColor': '#28A745'
+    'lineColor': '#CCCCCC',
+    'tertiaryColor': '#28A745',
+    'textColor': '#CCCCCC',
+    'background': '#282a36'
 }}}%%
 
 flowchart TB
@@ -111,18 +113,4 @@ flowchart TB
     %% External cloud providers connection
     cloud_controller -.-> cloud["☁️ Cloud Provider API"]
     
-    %% Component styling with classes
-    classDef controlPlane fill:#326CE5,stroke:#2857A4,color:white,stroke-width:2px;
-    classDef dataStore fill:#F58220,stroke:#C25D06,color:white,stroke-width:2px;
-    classDef nodeComponent fill:#28A745,stroke:#176127,color:white,stroke-width:2px;
-    classDef userInterface fill:#666666,stroke:#333333,color:white,stroke-width:2px;
-    classDef addons fill:#9C27B0,stroke:#6A1B9A,color:white,stroke-width:2px;
-    classDef cloud fill:#03A9F4,stroke:#0288D1,color:white,stroke-width:2px;
-    
-    %% Apply classes to components
-    class api,CONTROLLERS,controller_manager,replication,endpoint,node,service_account,deployment,job,scheduler controlPlane
-    class etcd dataStore
-    class kubelet1,kubelet2,kube_proxy1,kube_proxy2,CONTAINERS1,CONTAINERS2,pod1,pod2,pod3,pod4 nodeComponent
-    class kubectl,dashboard,api_clients userInterface
-    class dns,metrics,ingress,cni addons
-    class cloud_controller,cloud cloud
+    %% No custom styling for better compatibility

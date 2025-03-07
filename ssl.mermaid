@@ -1,4 +1,4 @@
-%%{init: {'theme':'default', 'themeVariables': { 
+%%{init: {'theme':'dark', 'themeVariables': { 
     'primaryColor': '#326CE5', 
     'primaryBorderColor': '#2857A4', 
     'primaryTextColor': '#fff',
@@ -6,8 +6,9 @@
     'secondaryBorderColor': '#C25D06',
     'tertiaryColor': '#28A745', 
     'tertiaryBorderColor': '#176127',
-    'lineColor': '#172B4D', 
-    'textColor': '#333333'
+    'lineColor': '#CCCCCC', 
+    'textColor': '#CCCCCC',
+    'background': '#282a36'
 }}}%%
 
 sequenceDiagram
@@ -19,16 +20,10 @@ sequenceDiagram
     participant Client as 💻 Client
     participant Server as 🖥️ Server
     
-    %% Style Definitions
-    classDef clientComponent fill:#03A9F4,stroke:#0288D1,color:white,stroke-width:2px;
-    classDef serverComponent fill:#28A745,stroke:#176127,color:white,stroke-width:2px;
-    
-    %% Apply styles
-    class Client clientComponent
-    class Server serverComponent
+    %% No custom styling for better compatibility
     
     %% Handshake Phase
-    rect rgb(240,248,255)
+    rect rgb(15,25,40)
     note over Client,Server: <b>Phase 1: Handshake</b>
 
     %% Initial Hello Messages
@@ -65,7 +60,7 @@ sequenceDiagram
     end
     
     %% Encrypted Communication Phase
-    rect rgb(240,255,240)
+    rect rgb(15,40,15)
     note over Client,Server: <b>Phase 2: Encrypted Communication</b>
     
     Client->>Server: Encrypted Application Data
