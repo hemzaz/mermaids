@@ -27,9 +27,9 @@ sequenceDiagram
     note over Client,Server: <b>Phase 1: Handshake</b>
 
     %% Initial Hello Messages
-    Client->>+Server: ClientHello<br/>(TLS versions, cipher suites, random)
+    Client->>Server: ClientHello<br/>(TLS versions, cipher suites, random)
     note right of Client: Supports TLS 1.0-1.3<br/>Offers modern ciphers
-    Server->>+Client: ServerHello<br/>(Selected TLS version, cipher suite, random)
+    Server->>Client: ServerHello<br/>(Selected TLS version, cipher suite, random)
     note left of Server: Selects highest<br/>supported version
 
     %% Certificate Exchange
@@ -44,7 +44,7 @@ sequenceDiagram
         note over Client,Server: No ServerKeyExchange<br/>(Using RSA direct encryption)
     end
     
-    Server->>-Client: ServerHelloDone
+    Server->>Client: ServerHelloDone
     
     %% Client Response
     Client->>Server: ClientKeyExchange<br/>(Pre-master secret)
@@ -54,7 +54,7 @@ sequenceDiagram
     Client->>Server: ChangeCipherSpec
     Client->>Server: Finished (Encrypted with session keys)
     Server->>Client: ChangeCipherSpec
-    Server->>-Client: Finished (Encrypted with session keys)
+    Server->>Client: Finished (Encrypted with session keys)
     
     note over Client,Server: <b>Session Keys Established</b>
     end

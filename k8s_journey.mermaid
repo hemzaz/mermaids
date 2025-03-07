@@ -26,34 +26,34 @@ sequenceDiagram
     
     %% Phase 1: User Authentication and Validation
     Note over User,Kubectl: <b>Phase 1: User Authentication & Validation</b>
-    User->>+Kubectl: kubectl apply -f <manifest.yaml>
-    Kubectl->>+API_Server: Authenticate & Submit manifest
-    API_Server->>+Etcd: Validate manifest & resource version
-    Etcd-->>-API_Server: Confirm no conflicts & store desired state
+    User->>Kubectl: kubectl apply -f <manifest.yaml>
+    Kubectl->>API_Server: Authenticate & Submit manifest
+    API_Server->>Etcd: Validate manifest & resource version
+    Etcd-->>API_Server: Confirm no conflicts & store desired state
     API_Server-->>Kubectl: Confirm receipt (202 Accepted)
-    Kubectl-->>-User: "deployment.apps/example created"
+    Kubectl-->>User: "deployment.apps/example created"
     
     %% Phase 2: Control Plane Processing
     Note over API_Server,Scheduler: <b>Phase 2: Control Plane Processing</b>
-    API_Server->>+Scheduler: Notify of unscheduled pod(s)
+    API_Server->>Scheduler: Notify of unscheduled pod(s)
     Scheduler->>Scheduler: Evaluate node capacity, taints, affinity
-    Scheduler->>-API_Server: Node selection & binding decision
+    Scheduler->>API_Server: Node selection & binding decision
     API_Server->>Etcd: Update pod spec with node assignment
     
     %% Phase 3: Node Operations
     Note over Kubelet,Container_Runtime: <b>Phase 3: Node Operations</b>
-    API_Server->>+Kubelet: Assign pod to node (via watch)
+    API_Server->>Kubelet: Assign pod to node (via watch)
     Kubelet->>Kubelet: Validate pod security context
-    Kubelet->>+Container_Runtime: Pull image(s) with auth
+    Kubelet->>Container_Runtime: Pull image(s) with auth
     
     alt Image Pull Successful
-        Container_Runtime-->>-Kubelet: Image(s) pulled successfully
-        Kubelet->>+Container_Runtime: Start container(s)
+        Container_Runtime-->>Kubelet: Image(s) pulled successfully
+        Kubelet->>Container_Runtime: Start container(s)
         Kubelet->>Kubelet: Configure pod networking & volumes
-        Container_Runtime-->>-Kubelet: Container(s) running
-        Kubelet-->>-API_Server: Update pod status to Running
+        Container_Runtime-->>Kubelet: Container(s) running
+        Kubelet-->>API_Server: Update pod status to Running
     else Image Pull Failure
-        Container_Runtime-->>-Kubelet: Image pull failed (401/404)
+        Container_Runtime-->>Kubelet: Image pull failed (401/404)
         Kubelet-->>API_Server: Log error, apply backoff, retry
     end
     
@@ -63,8 +63,8 @@ sequenceDiagram
     
     %% Optional: Readiness Probes
     opt Readiness Checks
-        Kubelet->>+Container_Runtime: Execute readiness probe
-        Container_Runtime-->>-Kubelet: Container is ready
+        Kubelet->>Container_Runtime: Execute readiness probe
+        Container_Runtime-->>Kubelet: Container is ready
         Kubelet-->>API_Server: Update pod ready condition
     end
     end
