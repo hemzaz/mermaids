@@ -1,42 +1,88 @@
 # Mermaid Diagrams Repository
 
-Welcome to the **Mermaid Diagrams Repository**! This repository is a treasure trove of Mermaid diagrams detailing various technical processes, from the intricate workings of compilers and Linux containers to the authentication flows in SAML and SSL. Each diagram is meticulously crafted to provide insights into complex systems through the simple, yet powerful, visual medium of Mermaid diagrams.
+Welcome to the **Mermaid Diagrams Repository**! This collection contains richly detailed Mermaid diagrams illustrating various technical processes and architectures. From compiler workflows to cloud architectures, these diagrams provide visual insights into complex systems using the powerful Mermaid diagramming language.
 
-## Diagrams Overview
+## 🔍 Diagrams Overview
 
-This repository contains the following Mermaid diagrams:
+This repository contains the following enhanced Mermaid diagrams:
 
-- `compiler.mermaid` - An in-depth look at the compilation process.
-- `complex_web_app.mermaid` - Example System design for a fairly complex web app on the cloud.
-- `container_linux_journey.mermaid` - The lifecycle of a Linux container.
-- `dhcp_dns.mermaid` - The process of how DHCP and DNS interact with a network client.
-- `java_program_journey.mermaid` - A detailed journey of a Java program from compilation to execution.
-- `k8s_journey.mermaid` - What happens behind the curtain when you do kubectl apply -f hello-world.yaml.
-- `linux_boot.mermaid` - The Linux boot process, step by step.
-- `linux_process_journey.mermaid` - The lifecycle of a Linux process.
-- `linux_process_w_threads_journey.mermaid` - How Linux handles processes with multiple threads.
-- `linux_scheduler.mermaid` - A deep dive into the Linux scheduler.
-- `python_program_journey.mermaid` - The execution path of a Python program.
-- `saml.mermaid` - The authentication and authorization flow in SAML.
-- `ssl.mermaid` - The SSL handshake and encryption process.
-- `simple_webapp.mermaid` - Simple web app, nothing more.
-- `vpn.mermaid` - How VPNs work, encapsulating data through encrypted tunnels.
+### System Architecture
+- `simple_webapp.mermaid` - Three-tier web application architecture with AWS components
+- `complex_web_app.mermaid` - Comprehensive cloud architecture for enterprise applications
+- `k8s_architecture.mermaid` - Kubernetes component architecture showing control and data planes
 
-## How to Use
+### Process Flows
+- `k8s_journey.mermaid` - Complete lifecycle of `kubectl apply` from user to container creation
+- `linux_boot.mermaid` - Detailed Linux boot sequence from BIOS to user login
+- `linux_process_journey.mermaid` - Process lifecycle in the Linux kernel
+- `linux_process_w_threads_journey.mermaid` - Thread management in Linux processes
+- `linux_scheduler.mermaid` - Linux kernel scheduler operation
 
-To view these diagrams, you'll need a Mermaid-compatible viewer or extension. Many code editors like Visual Studio Code have extensions for Mermaid, or you can use online tools like the [Mermaid Live Editor](https://mermaid-js.github.io/mermaid-live-editor/).
+### Networking & Security
+- `ssl.mermaid` - TLS/SSL handshake flow with modern cryptographic details
+- `saml.mermaid` - SAML authentication and authorization sequence
+- `vpn.mermaid` - VPN tunneling and encapsulation process
+- `dhcp_dns.mermaid` - Network address configuration and name resolution flow
 
-Simply copy the content of a `.mermaid` file into your Mermaid viewer to render the diagram visually.
+### Software Execution
+- `compiler.mermaid` - Compilation phases from source code to executable
+- `container_linux_journey.mermaid` - Container lifecycle from image to running process
+- `java_program_journey.mermaid` - Java execution flow through JVM
+- `python_program_journey.mermaid` - Python program execution process
 
-## Contributing
+## ✨ Features
 
-Your contributions are welcome! If you have improvements or additional diagrams to add, please follow these steps:
+These diagrams incorporate several enhanced features:
 
-1. **Fork the repository** - Make a copy of the repository to your GitHub account.
-2. **Create a branch** - Work on your changes in a new branch.
-3. **Commit your changes** - Make sure your commits are neatly packaged and well-described.
-4. **Open a pull request** - Describe the changes you've made and submit a PR to the main repository.
+- **Consistent Theming** - Color palettes tailored to diagram type (Kubernetes blue, AWS orange, etc.)
+- **Visual Hierarchy** - Logical grouping with subgraphs and directional flow
+- **Component Icons** - Emoji icons indicate component types (👤 users, 💾 storage, etc.)
+- **Technical Details** - Protocol specifications, version details, and alternative paths
+- **Phase Separation** - Clear process stages with colored backgrounds
+- **Comprehensive Comments** - Well-documented code with section explanations
 
-## License
+## 🚀 How to Use
+
+### Viewing Diagrams
+
+Several options are available:
+
+1. **VS Code Extension**: Install the [Mermaid Preview](https://marketplace.visualstudio.com/items?itemName=bierner.markdown-mermaid) extension
+
+2. **Mermaid CLI**: Render diagrams to images using the Mermaid CLI:
+   ```bash
+   npx @mermaid-js/mermaid-cli mmdc -i file.mermaid -o output.png
+   ```
+
+3. **Online Editors**: Use the [Mermaid Live Editor](https://mermaid-js.github.io/mermaid-live-editor/)
+
+4. **HTML Preview**: Generate an HTML file for local viewing:
+   ```bash
+   echo "<!DOCTYPE html><html><head><script src='https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js'></script></head><body><pre class='mermaid'>$(cat file.mermaid)</pre><script>mermaid.initialize({startOnLoad:true});</script></body></html>" > preview.html
+   ```
+
+### Making Changes
+
+When modifying or adding diagrams, please follow the style guide in [CLAUDE.md](./CLAUDE.md) for consistent styling and organization.
+
+## 🤝 Contributing
+
+Your contributions are welcome! To contribute:
+
+1. **Fork the repository** to your GitHub account
+2. **Create a branch** for your changes
+3. **Make your updates** following the style guide in CLAUDE.md
+4. **Submit a pull request** with a clear description of your changes
+
+## 📝 Style Guide
+
+See [CLAUDE.md](./CLAUDE.md) for detailed styling guidelines, including:
+
+- Theme configuration and color palettes
+- Component visualization standards
+- Diagram organization principles
+- Technical detail requirements
+
+## 📜 License
 
 This repository is shared under the MIT License. Feel free to use, modify, and share any of the diagrams as you see fit.

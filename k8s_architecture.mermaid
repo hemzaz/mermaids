@@ -1,0 +1,128 @@
+%%{init: {'theme':'default', 'themeVariables': { 
+    'primaryColor': '#326CE5', 
+    'primaryBorderColor': '#2857A4',
+    'primaryTextColor': '#fff',
+    'secondaryColor': '#F58220',
+    'lineColor': '#172B4D',
+    'tertiaryColor': '#28A745'
+}}}%%
+
+flowchart TB
+    %% Main container for the entire architecture
+    subgraph K8S["🚢 Kubernetes Architecture"]
+        direction TB
+        
+        %% User interaction components
+        subgraph UI["👤 User Interfaces"]
+            direction LR
+            kubectl["🔧 kubectl CLI"]
+            dashboard["📊 Dashboard"]
+            api_clients["🔌 API Clients"]
+        end
+        
+        %% Control Plane components
+        subgraph CONTROL_PLANE["🧠 Control Plane"]
+            direction TB
+            
+            %% API Server - the central hub
+            api["🎮 API Server"]
+            
+            %% Controllers
+            subgraph CONTROLLERS["🔄 Controllers"]
+                direction LR
+                controller_manager["Controller Manager"]
+                replication["Replication Controller"]
+                endpoint["Endpoint Controller"]
+                node["Node Controller"]
+                service_account["Service Account Controller"]
+                deployment["Deployment Controller"]
+                job["Job Controller"]
+            end
+            
+            %% Scheduler
+            scheduler["🧩 Scheduler"]
+            
+            %% Data storage
+            etcd["💾 etcd"]
+            
+            %% Cloud controller manager
+            cloud_controller["☁️ Cloud Controller Manager"]
+        end
+        
+        %% Node components
+        subgraph NODES["🖥️ Worker Nodes"]
+            direction TB
+            
+            subgraph NODE1["Node 1"]
+                direction TB
+                kubelet1["🤖 Kubelet"]
+                kube_proxy1["🔀 Kube Proxy"]
+                
+                %% Container runtime
+                subgraph CONTAINERS1["🐳 Container Runtime"]
+                    pod1["Pod"]
+                    pod2["Pod"]
+                end
+            end
+            
+            subgraph NODE2["Node 2"]
+                direction TB
+                kubelet2["🤖 Kubelet"]
+                kube_proxy2["🔀 Kube Proxy"]
+                
+                %% Container runtime
+                subgraph CONTAINERS2["🐳 Container Runtime"]
+                    pod3["Pod"]
+                    pod4["Pod"]
+                end
+            end
+            
+            %% Add-ons
+            subgraph ADDONS["📦 Add-ons"]
+                direction LR
+                dns["CoreDNS"]
+                metrics["Metrics Server"]
+                ingress["Ingress Controller"]
+                cni["CNI Plugin"]
+            end
+        end
+    end
+    
+    %% Connections between components
+    UI --> api
+    api --> etcd
+    api --> CONTROLLERS
+    CONTROLLERS --> api
+    api --> scheduler
+    scheduler --> api
+    api --> cloud_controller
+    cloud_controller --> api
+    
+    api --> kubelet1 & kubelet2
+    kubelet1 --> CONTAINERS1
+    kubelet2 --> CONTAINERS2
+    kubelet1 & kubelet2 --> api
+    
+    kube_proxy1 & kube_proxy2 --> api
+    
+    %% Add-ons connections
+    ADDONS --> api
+    
+    %% External cloud providers connection
+    cloud_controller -.-> cloud["☁️ Cloud Provider API"]
+    
+    %% Component styling with classes
+    classDef controlPlane fill:#326CE5,stroke:#2857A4,color:white,stroke-width:2px;
+    classDef dataStore fill:#F58220,stroke:#C25D06,color:white,stroke-width:2px;
+    classDef nodeComponent fill:#28A745,stroke:#176127,color:white,stroke-width:2px;
+    classDef userInterface fill:#666666,stroke:#333333,color:white,stroke-width:2px;
+    classDef addons fill:#9C27B0,stroke:#6A1B9A,color:white,stroke-width:2px;
+    classDef cloud fill:#03A9F4,stroke:#0288D1,color:white,stroke-width:2px;
+    
+    %% Apply classes to components
+    class api,CONTROLLERS,controller_manager,replication,endpoint,node,service_account,deployment,job,scheduler controlPlane
+    class etcd dataStore
+    class kubelet1,kubelet2,kube_proxy1,kube_proxy2,CONTAINERS1,CONTAINERS2,pod1,pod2,pod3,pod4 nodeComponent
+    class kubectl,dashboard,api_clients userInterface
+    class dns,metrics,ingress,cni addons
+    class cloud_controller,cloud cloud

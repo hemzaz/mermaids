@@ -1,32 +1,79 @@
-%%{init: {'theme':'base', 'themeVariables': { 'fontSize': '20px', 'primaryTextColor': '#fff', 'primaryColor': '#000', 'lineColor': '#000', 'secondaryColor': '#ffcb05', 'tertiaryColor': '#ffcb05', 'textColor': '#000', }}}%%
+%%{init: {'theme':'default', 'themeVariables': { 
+    'fontSize': '20px', 
+    'primaryTextColor': '#fff', 
+    'primaryColor': '#326CE5', 
+    'lineColor': '#172B4D', 
+    'secondaryColor': '#FFA630', 
+    'tertiaryColor': '#28A745', 
+    'textColor': '#172B4D'
+}}}%%
 sequenceDiagram
-    participant User as User
-    participant Kubectl as kubectl
-    participant API_Server as API Server
-    participant Etcd as etcd
-    participant Scheduler as Scheduler
-    participant Kubelet as Kubelet
-    participant Container_Runtime as Container Runtime
-
-    Note over User,Kubectl: User Authentication
-    User->>Kubectl: kubectl apply -f <manifest.yaml>
-    Kubectl->>API_Server: Authenticate and Submit manifest
-    API_Server->>Etcd: Validate manifest
-    Etcd-->>API_Server: Update stored state
-    Note over API_Server,Scheduler: API Server Processing
-    API_Server->>Scheduler: Notify of unscheduled pod
-    Scheduler->>API_Server: Node selected for pod
-    Note over Kubelet: Kubelet Activation
-    API_Server->>Kubelet: Assign pod to node
-    Kubelet->>Container_Runtime: Pull image(s)
+    %% 1. Visual Identifiers with Icons
+    participant User as 👤 User
+    participant Kubectl as 🔧 kubectl
+    participant API_Server as 🎮 API Server
+    participant Etcd as 💾 etcd
+    participant Scheduler as 🧩 Scheduler
+    participant Kubelet as 🤖 Kubelet
+    participant Container_Runtime as 🐳 Container Runtime
+    
+    %% 2. Improve Styling with Classes
+    classDef controlPlane fill:#326CE5,stroke:#2857A4,color:white,stroke-width:2px;
+    classDef dataStore fill:#F58220,stroke:#C25D06,color:white,stroke-width:2px;
+    classDef nodeComponent fill:#28A745,stroke:#176127,color:white,stroke-width:2px;
+    classDef userTool fill:#666666,stroke:#333333,color:white,stroke-width:2px;
+    
+    %% Apply classes to participants
+    class API_Server,Scheduler controlPlane
+    class Etcd dataStore
+    class Kubelet,Container_Runtime nodeComponent
+    class Kubectl userTool
+    
+    %% 3. Add Technical Depth with Process Phases
+    rect rgb(230,242,255)
+    note over User,Container_Runtime: <b>Kubernetes Application Deployment Flow</b>
+    
+    %% Phase 1: User Authentication and Validation
+    Note over User,Kubectl: <b>Phase 1: User Authentication & Validation</b>
+    User->>+Kubectl: kubectl apply -f <manifest.yaml>
+    Kubectl->>+API_Server: Authenticate & Submit manifest
+    API_Server->>+Etcd: Validate manifest & resource version
+    Etcd-->>-API_Server: Confirm no conflicts & store desired state
+    API_Server-->>Kubectl: Confirm receipt (202 Accepted)
+    Kubectl-->>-User: "deployment.apps/example created"
+    
+    %% Phase 2: Control Plane Processing
+    Note over API_Server,Scheduler: <b>Phase 2: Control Plane Processing</b>
+    API_Server->>+Scheduler: Notify of unscheduled pod(s)
+    Scheduler->>Scheduler: Evaluate node capacity, taints, affinity
+    Scheduler->>-API_Server: Node selection & binding decision
+    API_Server->>Etcd: Update pod spec with node assignment
+    
+    %% Phase 3: Node Operations
+    Note over Kubelet,Container_Runtime: <b>Phase 3: Node Operations</b>
+    API_Server->>+Kubelet: Assign pod to node (via watch)
+    Kubelet->>Kubelet: Validate pod security context
+    Kubelet->>+Container_Runtime: Pull image(s) with auth
+    
     alt Image Pull Successful
-        Container_Runtime-->>Kubelet: Image(s) pulled successfully
-        Kubelet->>Container_Runtime: Start container(s)
-        Container_Runtime-->>Kubelet: Container(s) running
-        Kubelet-->>API_Server: Update pod status to Running
+        Container_Runtime-->>-Kubelet: Image(s) pulled successfully
+        Kubelet->>+Container_Runtime: Start container(s)
+        Kubelet->>Kubelet: Configure pod networking & volumes
+        Container_Runtime-->>-Kubelet: Container(s) running
+        Kubelet-->>-API_Server: Update pod status to Running
     else Image Pull Failure
-        Container_Runtime-->>Kubelet: Image pull failed
-        Kubelet-->>API_Server: Log error, retry image pull
+        Container_Runtime-->>-Kubelet: Image pull failed (401/404)
+        Kubelet-->>API_Server: Log error, apply backoff, retry
     end
-    Note over API_Server: Pod and Container Running
-    API_Server-->>User: Confirm pod and container are running
+    
+    %% Phase 4: Readiness & Availability
+    Note over API_Server: <b>Phase 4: Readiness & Availability</b>
+    API_Server-->>User: Deployment status (kubectl get pods)
+    
+    %% Optional: Readiness Probes
+    opt Readiness Checks
+        Kubelet->>+Container_Runtime: Execute readiness probe
+        Container_Runtime-->>-Kubelet: Container is ready
+        Kubelet-->>API_Server: Update pod ready condition
+    end
+    end

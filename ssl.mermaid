@@ -1,18 +1,81 @@
+%%{init: {'theme':'default', 'themeVariables': { 
+    'primaryColor': '#326CE5', 
+    'primaryBorderColor': '#2857A4', 
+    'primaryTextColor': '#fff',
+    'secondaryColor': '#F58220', 
+    'secondaryBorderColor': '#C25D06',
+    'tertiaryColor': '#28A745', 
+    'tertiaryBorderColor': '#176127',
+    'lineColor': '#172B4D', 
+    'textColor': '#333333'
+}}}%%
+
 sequenceDiagram
-    participant C as Client
-    participant S as Server
+    %% === TLS/SSL HANDSHAKE DIAGRAM ===
+    %% Title: TLS/SSL Handshake and Secure Communication
+    %% Description: Shows the TLS 1.2 handshake process and subsequent encrypted communication
 
-    C->>+S: ClientHello (Supported SSL versions, cipher suites, random number)
-    S->>+C: ServerHello (Chosen SSL version, cipher suite, random number)
-    S->>C: Certificate (Server's public key certificate)
-    S->>C: ServerKeyExchange (Optional, for Diffie-Hellman)
-    S->>C: ServerHelloDone
-    C->>S: ClientKeyExchange (Pre-master secret encrypted with server's public key)
-    C->>S: ChangeCipherSpec (Switch to encrypted communication)
-    C->>S: Finished (Verify data integrity and encryption)
-    S->>C: ChangeCipherSpec (Switch to encrypted communication)
-    S->>C: Finished (Verify data integrity and encryption)
-    Note over C,S: Encrypted SSL Session Established
+    %% Component Definitions
+    participant Client as 💻 Client
+    participant Server as 🖥️ Server
+    
+    %% Style Definitions
+    classDef clientComponent fill:#03A9F4,stroke:#0288D1,color:white,stroke-width:2px;
+    classDef serverComponent fill:#28A745,stroke:#176127,color:white,stroke-width:2px;
+    
+    %% Apply styles
+    class Client clientComponent
+    class Server serverComponent
+    
+    %% Handshake Phase
+    rect rgb(240,248,255)
+    note over Client,Server: <b>Phase 1: Handshake</b>
 
-    C->>S: Encrypted Data (Client to Server communication)
-    S->>C: Encrypted Data (Server to Client communication)
+    %% Initial Hello Messages
+    Client->>+Server: ClientHello<br/>(TLS versions, cipher suites, random)
+    note right of Client: Supports TLS 1.0-1.3<br/>Offers modern ciphers
+    Server->>+Client: ServerHello<br/>(Selected TLS version, cipher suite, random)
+    note left of Server: Selects highest<br/>supported version
+
+    %% Certificate Exchange
+    Server->>Client: Certificate<br/>(Server's X.509 certificate chain)
+    note left of Server: Contains public key<br/>and digital signature
+    
+    %% Key Exchange
+    alt ECDHE/DHE Key Exchange (Forward Secrecy)
+        Server->>Client: ServerKeyExchange<br/>(DH/ECDH parameters signed by server)
+        note left of Server: Enables perfect<br/>forward secrecy
+    else RSA Key Exchange
+        note over Client,Server: No ServerKeyExchange<br/>(Using RSA direct encryption)
+    end
+    
+    Server->>-Client: ServerHelloDone
+    
+    %% Client Response
+    Client->>Server: ClientKeyExchange<br/>(Pre-master secret)
+    note right of Client: Key material protected<br/>by server's public key<br/>or ECDHE/DHE
+    
+    %% Switch to Encrypted Communication
+    Client->>Server: ChangeCipherSpec
+    Client->>Server: Finished (Encrypted with session keys)
+    Server->>Client: ChangeCipherSpec
+    Server->>-Client: Finished (Encrypted with session keys)
+    
+    note over Client,Server: <b>Session Keys Established</b>
+    end
+    
+    %% Encrypted Communication Phase
+    rect rgb(240,255,240)
+    note over Client,Server: <b>Phase 2: Encrypted Communication</b>
+    
+    Client->>Server: Encrypted Application Data
+    Server->>Client: Encrypted Application Data
+    
+    opt Session Resumption
+        note over Client,Server: For future connections:<br/>TLS Session ID or Tickets<br/>enable faster reconnection
+    end
+    end
+    
+    %% TLS 1.3 Handshake (Optional)
+    note over Client,Server: <b>TLS 1.3 Handshake (Improved)</b>
+    note over Client,Server: TLS 1.3 reduces handshake to 1-RTT<br/>by combining ClientHello and key share<br/>and requires perfect forward secrecy

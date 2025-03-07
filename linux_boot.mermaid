@@ -1,22 +1,119 @@
+%%{init: {'theme':'default', 'themeVariables': { 
+    'primaryColor': '#E95420', 
+    'primaryBorderColor': '#C4441C', 
+    'primaryTextColor': '#fff',
+    'secondaryColor': '#F58220', 
+    'secondaryBorderColor': '#C25D06',
+    'tertiaryColor': '#28A745', 
+    'tertiaryBorderColor': '#176127',
+    'lineColor': '#772953', 
+    'textColor': '#333333'
+}}}%%
+
 sequenceDiagram
-    participant P as Power On
-    participant B as BIOS/UEFI
-    participant S as Boot Device (MBR/GPT)
-    participant L as GRUB/LILO
-    participant K as Linux Kernel
-    participant I as Init/Systemd
-    participant R as Runlevel Scripts/Services
-    participant DM as Display Manager
+    %% === LINUX BOOT PROCESS DIAGRAM ===
+    %% Title: Linux Boot Sequence
+    %% Description: Detailed flow of Linux system startup from power-on to user login
 
-    P->>B: Initialize hardware
-    B->>S: Read MBR/GPT
-    S->>L: Execute Bootloader
-    L->>K: Load Kernel into memory
-    K->>I: Start Init/Systemd
-    I->>R: Execute Runlevel/Target Units
-    R->>I: Services started
-    I->>DM: Start Display Manager/Login
-    DM->>I: User Login
+    %% Component Definitions with Icons
+    participant Power as 🔌 Power On
+    participant BIOS as 🔧 BIOS/UEFI
+    participant Disk as 💽 Boot Device
+    participant Bootloader as 🥾 GRUB/LILO
+    participant Kernel as 🐧 Linux Kernel
+    participant Init as ⚙️ Init/Systemd
+    participant Services as 🔄 Services
+    participant Display as 🖥️ Display Manager
 
-    %% Note
-    Note over P,DM: Linux Boot Process
+    %% Style Definitions
+    classDef hardwareComponent fill:#E95420,stroke:#C4441C,color:white,stroke-width:2px;
+    classDef bootComponent fill:#F58220,stroke:#C25D06,color:white,stroke-width:2px;
+    classDef kernelComponent fill:#28A745,stroke:#176127,color:white,stroke-width:2px;
+    classDef userSpaceComponent fill:#2C001E,stroke:#772953,color:white,stroke-width:2px;
+    
+    %% Apply styles
+    class Power,BIOS,Disk hardwareComponent
+    class Bootloader bootComponent
+    class Kernel kernelComponent
+    class Init,Services,Display userSpaceComponent
+    
+    %% Phase 1: Hardware Initialization
+    rect rgb(255,240,230)
+    note over Power,Display: <b>Phase 1: Hardware Initialization</b>
+    
+    Power->>+BIOS: System power activated
+    note right of Power: POST begins
+    
+    BIOS-->>BIOS: Power-On Self Test (POST)
+    BIOS-->>BIOS: Initialize core hardware
+    BIOS->>-Disk: Locate boot device
+    
+    note left of BIOS: Check boot sequence<br/>in CMOS settings
+    end
+
+    %% Phase 2: Bootloader Stage
+    rect rgb(255,245,215)
+    note over Power,Display: <b>Phase 2: Bootloader Stage</b>
+    
+    Disk->>+Bootloader: Load bootloader from MBR/GPT
+    
+    alt UEFI System
+        note over Bootloader: Load from EFI System Partition
+    else Legacy BIOS
+        note over Bootloader: Load from Master Boot Record
+    end
+    
+    Bootloader-->>Bootloader: Display boot menu
+    Bootloader-->>Bootloader: Load boot parameters
+    Bootloader->>-Kernel: Load kernel & initramfs
+    
+    note right of Bootloader: Pass kernel parameters<br/>like root device location
+    end
+    
+    %% Phase 3: Kernel Initialization
+    rect rgb(240,255,240)
+    note over Power,Display: <b>Phase 3: Kernel Initialization</b>
+    
+    Kernel-->>Kernel: Decompress itself
+    Kernel-->>Kernel: Initialize memory management
+    Kernel-->>Kernel: Mount root filesystem (read-only)
+    Kernel-->>Kernel: Load essential drivers
+    
+    alt Using initramfs/initrd
+        Kernel-->>Kernel: Load drivers needed to<br/>mount actual root filesystem
+        Kernel-->>Kernel: Switch to actual root filesystem
+    end
+    
+    Kernel->>+Init: Start first process (PID 1)
+    end
+    
+    %% Phase 4: System Initialization
+    rect rgb(240,248,255)
+    note over Power,Display: <b>Phase 4: System Initialization</b>
+    
+    alt SystemD Init System
+        Init-->>Init: Parse /etc/systemd/system
+        Init->>+Services: Start target units in dependency order
+    else SysVinit
+        Init-->>Init: Parse /etc/inittab
+        Init->>+Services: Execute runlevel scripts in /etc/rc.d/
+    end
+    
+    Services-->>Services: Start system services
+    Services-->>Services: Configure network
+    Services-->>Services: Mount filesystems
+    Services->>-Init: Core services started
+    
+    Init->>+Display: Start display manager
+    end
+    
+    %% Phase 5: User Session
+    rect rgb(245,240,255)
+    note over Power,Display: <b>Phase 5: User Session</b>
+    
+    Display-->>Display: Show login screen
+    Display->>Display: Authenticate user
+    Display->>-Init: Start user session
+    
+    note right of Display: Launch desktop environment<br/>or shell based on user profile
+    end
