@@ -26,13 +26,37 @@ flowchart TB
         subgraph CONTROL_PLANE["🧠 Control Plane"]
             direction TB
             
-            %% API Server - the central hub
-            api["🎮 API Server"]
+            subgraph MASTER_NODES["🔐 Master Nodes"]
+                direction TB
+                
+                subgraph MASTER1["Master Node 1"]
+                    %% API Server - the central hub
+                    api1["🎮 API Server"]
+                    scheduler1["🧩 Scheduler"]
+                    controller_manager1["🔄 Controller Manager"]
+                    etcd1["💾 etcd"]
+                end
+                
+                subgraph MASTER2["Master Node 2"]
+                    %% API Server - the central hub for HA
+                    api2["🎮 API Server"]
+                    scheduler2["🧩 Scheduler"]
+                    controller_manager2["🔄 Controller Manager"]
+                    etcd2["💾 etcd"]
+                end
+                
+                subgraph MASTER3["Master Node 3"]
+                    %% API Server - the central hub for HA
+                    api3["🎮 API Server"]
+                    scheduler3["🧩 Scheduler"]
+                    controller_manager3["🔄 Controller Manager"]
+                    etcd3["💾 etcd"]
+                end
+            end
             
-            %% Controllers
+            %% Logical representation of controllers
             subgraph CONTROLLERS["🔄 Controllers"]
                 direction LR
-                controller_manager["Controller Manager"]
                 replication["Replication Controller"]
                 endpoint["Endpoint Controller"]
                 node["Node Controller"]
@@ -41,10 +65,13 @@ flowchart TB
                 job["Job Controller"]
             end
             
-            %% Scheduler
+            %% Reference to the API server for connections (logical)
+            api["🎮 API Server"]
+            
+            %% Reference to the scheduler for connections (logical)
             scheduler["🧩 Scheduler"]
             
-            %% Data storage
+            %% Reference to the data storage for connections (logical)
             etcd["💾 etcd"]
             
             %% Cloud controller manager
@@ -92,6 +119,11 @@ flowchart TB
     
     %% Connections between components
     UI --> api
+    
+    %% Master node internal connections
+    api1 & api2 & api3 --- etcd1 & etcd2 & etcd3
+    
+    %% Logical connections for diagram clarity
     api --> etcd
     api --> CONTROLLERS
     CONTROLLERS --> api
@@ -100,6 +132,7 @@ flowchart TB
     api --> cloud_controller
     cloud_controller --> api
     
+    %% Worker node connections to control plane
     api --> kubelet1 & kubelet2
     kubelet1 --> CONTAINERS1
     kubelet2 --> CONTAINERS2
@@ -112,5 +145,9 @@ flowchart TB
     
     %% External cloud providers connection
     cloud_controller -.-> cloud["☁️ Cloud Provider API"]
+    
+    %% HA connections between master nodes
+    MASTER1 --- MASTER2 --- MASTER3
+    MASTER1 --- MASTER3
     
     %% No custom styling for better compatibility
