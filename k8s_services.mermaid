@@ -1,0 +1,192 @@
+%%{init: {'theme':'dark', 'themeVariables': { 
+    'primaryColor': '#326CE5', 
+    'primaryBorderColor': '#2857A4',
+    'primaryTextColor': '#fff',
+    'secondaryColor': '#F58220',
+    'lineColor': '#CCCCCC',
+    'tertiaryColor': '#28A745',
+    'textColor': '#CCCCCC',
+    'background': '#282a36'
+}}}%%
+
+flowchart TB
+    %% Main container for services architecture
+    subgraph K8S["Kubernetes Service Types"]
+        direction TB
+        
+        %% ClusterIP section
+        subgraph CLUSTERIP["ClusterIP Service"]
+            direction TB
+            
+            cluster_service["Service: ClusterIP
+            Type: ClusterIP
+            IP: 10.96.0.10"]
+            
+            subgraph CLUSTER_PODS["Target Pods"]
+                direction LR
+                cp1["Pod 1
+                10.1.0.4"]
+                cp2["Pod 2
+                10.1.0.5"]
+                cp3["Pod 3
+                10.1.0.6"]
+            end
+            
+            cluster_service --> cp1 & cp2 & cp3
+            
+            subgraph CLUSTER_CLIENTS["Clients"]
+                direction LR
+                cc1["Pod A
+                (Internal)"]
+            end
+            
+            cc1 --> cluster_service
+        end
+        
+        %% NodePort section
+        subgraph NODEPORT["NodePort Service"]
+            direction TB
+            
+            node_service["Service: MyApp
+            Type: NodePort
+            ClusterIP: 10.96.0.20
+            NodePort: 30080"]
+            
+            subgraph NODES["Kubernetes Nodes"]
+                direction LR
+                node1["Node 1
+                IP: 192.168.1.10
+                Port: 30080"]
+                node2["Node 2
+                IP: 192.168.1.11
+                Port: 30080"]
+            end
+            
+            subgraph NODE_PODS["Target Pods"]
+                direction LR
+                np1["Pod 1
+                10.1.0.7"]
+                np2["Pod 2
+                10.1.0.8"]
+            end
+            
+            node_service --> np1 & np2
+            node1 & node2 --> node_service
+            
+            external_client1["External Client"] --> node1
+            external_client1 --> node2
+        end
+        
+        %% LoadBalancer section
+        subgraph LOADBALANCER["LoadBalancer Service"]
+            direction TB
+            
+            lb_service["Service: WebApp
+            Type: LoadBalancer
+            ClusterIP: 10.96.0.30
+            NodePort: 30443
+            External IP: 35.200.100.10"]
+            
+            subgraph LBNODES["Kubernetes Nodes"]
+                direction LR
+                lbnode1["Node 1
+                IP: 192.168.1.10
+                Port: 30443"]
+                lbnode2["Node 2
+                IP: 192.168.1.11
+                Port: 30443"]
+            end
+            
+            subgraph LB_PODS["Target Pods"]
+                direction LR
+                lbp1["Pod 1
+                10.1.0.9"]
+                lbp2["Pod 2
+                10.1.0.10"]
+                lbp3["Pod 3
+                10.1.0.11"]
+            end
+            
+            cloud_lb["Cloud Load Balancer
+            IP: 35.200.100.10"]
+            
+            lb_service --> lbp1 & lbp2 & lbp3
+            cloud_lb --> lbnode1 & lbnode2
+            lbnode1 & lbnode2 --> lb_service
+            
+            external_clients["Internet Clients"] --> cloud_lb
+        end
+        
+        %% Ingress section
+        subgraph INGRESS["Ingress"]
+            direction TB
+            
+            ingress_controller["Ingress Controller"]
+            ingress_resource["Ingress Resource
+            host: myapp.example.com → service: myapp
+            host: api.example.com → service: api"]
+            
+            subgraph INGRESS_SERVICES["Backend Services"]
+                direction LR
+                svc1["Service: myapp
+                Type: ClusterIP"]
+                svc2["Service: api
+                Type: ClusterIP"]
+            end
+            
+            subgraph INGRESS_PODS["Backend Pods"]
+                direction TB
+                ip1["myapp Pods"]
+                ip2["api Pods"]
+            end
+            
+            cloud_lb2["Cloud Load Balancer
+            IP: 35.200.100.20"]
+            
+            external_clients2["Internet Clients"] --> cloud_lb2
+            cloud_lb2 --> ingress_controller
+            ingress_controller --> ingress_resource
+            ingress_resource --> svc1 & svc2
+            svc1 --> ip1
+            svc2 --> ip2
+        end
+    end
+    
+    %% Explainer Section
+    subgraph LEGEND["Service Types Explanation"]
+        direction TB
+        
+        clusterip_ex["ClusterIP:
+        - Internal access only
+        - Stable internal IP address
+        - Load balances to pods
+        - Default service type"]
+        
+        nodeport_ex["NodePort:
+        - Exposes service on each node's IP
+        - Fixed port on each node
+        - Routes to ClusterIP service
+        - Port range: 30000-32767"]
+        
+        lb_ex["LoadBalancer:
+        - External load balancer
+        - Exposes service externally
+        - Routes to NodePort service
+        - Cloud provider specific"]
+        
+        ingress_ex["Ingress:
+        - HTTP/HTTPS routing
+        - SSL termination
+        - Path-based routing
+        - Name-based virtual hosting"]
+    end
+        
+    %% Connections between components
+    CLUSTERIP ~~~ NODEPORT
+    NODEPORT ~~~ LOADBALANCER
+    LOADBALANCER ~~~ INGRESS
+    
+    CLUSTERIP --- clusterip_ex
+    NODEPORT --- nodeport_ex
+    LOADBALANCER --- lb_ex
+    INGRESS --- ingress_ex

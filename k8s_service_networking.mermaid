@@ -1,0 +1,132 @@
+%%{init: {'theme':'dark', 'themeVariables': { 
+    'primaryColor': '#326CE5', 
+    'primaryBorderColor': '#2857A4',
+    'primaryTextColor': '#fff',
+    'secondaryColor': '#F58220',
+    'lineColor': '#CCCCCC',
+    'tertiaryColor': '#28A745',
+    'textColor': '#CCCCCC',
+    'background': '#282a36'
+}}}%%
+
+flowchart TB
+    %% Main container for service networking
+    subgraph K8S["Kubernetes Service Networking"]
+        direction TB
+        
+        %% External traffic section
+        subgraph EXTERNAL["External Traffic"]
+            direction LR
+            internet["🌐 Internet"]
+            cloud_lb["☁️ Cloud Load Balancer
+            104.198.14.52"]
+        end
+        
+        %% Node section with kube-proxy
+        subgraph NODES["Kubernetes Nodes"]
+            direction TB
+            
+            subgraph NODE1["Node 1 (192.168.1.10)"]
+                direction TB
+                
+                kube_proxy1["kube-proxy
+                (iptables/IPVS)"]
+                
+                subgraph PODS1["Pods"]
+                    direction LR
+                    client_pod["Client Pod
+                    10.1.0.5"]
+                    service_pod1["Service Pod 1
+                    10.1.0.7
+                    Label: app=backend"]
+                end
+            end
+            
+            subgraph NODE2["Node 2 (192.168.1.11)"]
+                direction TB
+                
+                kube_proxy2["kube-proxy
+                (iptables/IPVS)"]
+                
+                subgraph PODS2["Pods"]
+                    direction LR
+                    service_pod2["Service Pod 2
+                    10.2.0.3
+                    Label: app=backend"]
+                    service_pod3["Service Pod 3
+                    10.2.0.4
+                    Label: app=backend"]
+                end
+            end
+        end
+        
+        %% Control plane
+        subgraph CONTROL["Control Plane"]
+            direction TB
+            
+            api_server["API Server"]
+            
+            endpoint_controller["Endpoint Controller"]
+            
+            service_controller["Service Controller"]
+            
+            coredns["CoreDNS"]
+            
+            subgraph SVC_RESOURCES["Service Resources"]
+                direction LR
+                svc_def["Service: backend
+                Type: LoadBalancer
+                Selector: app=backend
+                ClusterIP: 10.96.0.10
+                Port: 80"]
+                
+                endpoints["Endpoints: backend
+                - 10.1.0.7:80
+                - 10.2.0.3:80
+                - 10.2.0.4:80"]
+            end
+        end
+        
+        %% Networking flow explanation
+        subgraph FLOW["Service Traffic Flow"]
+            direction TB
+            flow1["1. Client requests service 
+            via ClusterIP or DNS name 
+            (backend.default.svc.cluster.local)"]
+            
+            flow2["2. kube-proxy rules intercept 
+            traffic to ClusterIP"]
+            
+            flow3["3. Packet is redirected to 
+            a randomly selected endpoint"]
+            
+            flow4["4. Return traffic follows 
+            direct path to the client"]
+            
+            flow5["5. External LoadBalancer traffic
+            gets distributed across nodes"]
+            
+            flow1 --> flow2 --> flow3 --> flow4
+            flow5 --> flow2
+        end
+    end
+    
+    %% Connect the components to show the flow
+    internet --> cloud_lb
+    cloud_lb --> NODE1 & NODE2
+    
+    client_pod -- "1. Request to: backend.default.svc.cluster.local" --> coredns
+    coredns -- "Returns 10.96.0.10" --> client_pod
+    
+    client_pod -- "2. Request to: 10.96.0.10:80" --> kube_proxy1
+    kube_proxy1 -- "3. Redirects to random pod" --> service_pod1 & service_pod2 & service_pod3
+    
+    api_server --> endpoint_controller
+    endpoint_controller -- "Watches pod changes" --> SVC_RESOURCES
+    endpoint_controller -- "Updates endpoints" --> endpoints
+    
+    service_controller -- "Creates load balancer" --> cloud_lb
+    service_controller -- "Updates service status" --> svc_def
+    
+    %% iptables/IPVS updates
+    SVC_RESOURCES -- "Updates rules" --> kube_proxy1 & kube_proxy2

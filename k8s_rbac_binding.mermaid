@@ -1,0 +1,245 @@
+%%{init: {'theme':'dark', 'themeVariables': { 
+    'primaryColor': '#326CE5', 
+    'primaryBorderColor': '#2857A4',
+    'primaryTextColor': '#fff',
+    'secondaryColor': '#F58220',
+    'lineColor': '#CCCCCC',
+    'tertiaryColor': '#28A745',
+    'textColor': '#CCCCCC',
+    'background': '#282a36'
+}}}%%
+
+flowchart TB
+    %% Main title
+    title["Kubernetes RBAC: Role Binding Relationships"]
+    
+    %% Subject types
+    subgraph SUBJECTS["Subjects (Who)"]
+        direction TB
+        
+        subgraph USER_TYPES["User Types"]
+            direction LR
+            sa["ServiceAccount
+            (In-cluster identities)"]
+            user["User
+            (External identities)"]
+            group["Group
+            (Collection of users)"]
+        end
+        
+        subgraph EXAMPLES["Subject Examples"]
+            direction TB
+            
+            sa_example["ServiceAccount:
+            - name: app-sa
+              namespace: default"]
+            
+            user_example["User:
+            - name: jane@example.com"]
+            
+            group_example["Group:
+            - name: system:masters
+            - name: dev-team"]
+        end
+        
+        USER_TYPES --- EXAMPLES
+    end
+    
+    %% Role types
+    subgraph ROLES["Roles (What)"]
+        direction TB
+        
+        subgraph ROLE_TYPES["Role Types"]
+            direction LR
+            
+            role["Role
+            (Namespace-scoped permissions)"]
+            
+            cluster_role["ClusterRole
+            (Cluster-wide permissions)"]
+        end
+        
+        subgraph ROLE_EXAMPLES["Role Examples"]
+            direction TB
+            
+            role_example["Role: pod-reader
+            namespace: default
+            - Allows read-only access to pods
+              in the default namespace"]
+            
+            cr_example["ClusterRole: admin
+            - Allows full access to most resources
+              across all namespaces"]
+            
+            cr_example2["ClusterRole: system:node
+            - Allows node-specific API access
+              for kubelet operations"]
+        end
+        
+        ROLE_TYPES --- ROLE_EXAMPLES
+    end
+    
+    %% Binding types
+    subgraph BINDINGS["Bindings (How)"]
+        direction TB
+        
+        subgraph BINDING_TYPES["Binding Types"]
+            direction LR
+            
+            rb["RoleBinding
+            (Namespace-scoped binding)"]
+            
+            crb["ClusterRoleBinding
+            (Cluster-wide binding)"]
+        end
+        
+        subgraph BINDING_EXAMPLES["Binding Examples"]
+            direction TB
+            
+            rb_example["RoleBinding: pod-reader-binding
+            namespace: default
+            - Grants pod-reader role
+              to subjects in default namespace"]
+            
+            crb_example["ClusterRoleBinding: global-admin
+            - Grants admin clusterrole
+              to subjects across all namespaces"]
+        end
+        
+        BINDING_TYPES --- BINDING_EXAMPLES
+    end
+    
+    %% Binding patterns
+    subgraph PATTERNS["Binding Patterns"]
+        direction TB
+        
+        pattern1["Pattern 1:
+        RoleBinding → Role
+        (Namespace-scoped permissions)"]
+        
+        pattern2["Pattern 2:
+        RoleBinding → ClusterRole
+        (Namespace-scoped permissions
+        using cluster-wide role definition)"]
+        
+        pattern3["Pattern 3:
+        ClusterRoleBinding → ClusterRole
+        (Cluster-wide permissions)"]
+    end
+    
+    %% Examples
+    subgraph CONCRETE["Concrete Examples"]
+        direction TB
+        
+        ex1["Example 1:
+        - ServiceAccount: frontend-sa
+        - RoleBinding: view-pods
+        - Role: pod-viewer
+        - Scope: default namespace
+        - Effect: frontend-sa can view pods in default namespace"]
+        
+        ex2["Example 2:
+        - User: jane@example.com
+        - ClusterRoleBinding: jane-admin
+        - ClusterRole: admin
+        - Scope: All namespaces
+        - Effect: Jane has admin access across the cluster"]
+        
+        ex3["Example 3:
+        - ServiceAccount: monitoring-sa
+        - RoleBinding: metrics-viewer
+        - ClusterRole: metrics-reader
+        - Scope: monitoring namespace only
+        - Effect: monitoring-sa can read metrics in monitoring namespace"]
+    end
+    
+    %% Visual connections
+    SUBJECTS --> BINDINGS
+    ROLES --> BINDINGS
+    BINDINGS --> PATTERNS
+    PATTERNS --> CONCRETE
+    
+    subgraph VISUALIZATION["Visualization of RBAC Relationships"]
+        direction TB
+        
+        %% Define the subjects
+        subject1["User: bob@example.com"]
+        subject2["ServiceAccount: app-sa
+        namespace: default"]
+        subject3["Group: dev-team"]
+        
+        %% Define the roles
+        role1["Role: pod-reader
+        namespace: default
+        resources: pods
+        verbs: get, list, watch"]
+        
+        crole1["ClusterRole: log-reader
+        resources: pods/log
+        verbs: get, list"]
+        
+        crole2["ClusterRole: view
+        resources: many read-only
+        verbs: get, list, watch"]
+        
+        %% Define bindings
+        rbind1["RoleBinding: bob-pod-reader
+        namespace: default"]
+        
+        rbind2["RoleBinding: sa-logs
+        namespace: default"]
+        
+        crbind1["ClusterRoleBinding: 
+        dev-team-view"]
+        
+        %% Connect them
+        subject1 -- "subject reference" --> rbind1
+        rbind1 -- "roleRef" --> role1
+        
+        subject2 -- "subject reference" --> rbind2
+        rbind2 -- "roleRef" --> crole1
+        
+        subject3 -- "subject reference" --> crbind1
+        crbind1 -- "roleRef" --> crole2
+    end
+    
+    %% Show special cases
+    subgraph SPECIAL["Special Cases"]
+        direction TB
+        
+        subgraph DEFAULT_SA["Default ServiceAccount"]
+            direction TB
+            
+            default_sa["ServiceAccount: default
+            namespace: <each namespace>
+            - Created automatically
+            - No special permissions by default"]
+        end
+        
+        subgraph SYSTEM_SA["System ServiceAccounts"]
+            direction TB
+            
+            system_sa["ServiceAccounts in kube-system:
+            - kube-proxy
+            - coredns
+            - etc.
+            
+            Each has specific ClusterRoles
+            bound via ClusterRoleBindings"]
+        end
+        
+        subgraph AGGREGATED["Aggregated ClusterRoles"]
+            direction TB
+            
+            agg_role["ClusterRoles can be aggregated:
+            
+            ClusterRole with: 
+            aggregationRule:
+              clusterRoleSelectors:
+                - matchLabels:
+                    rbac.example.com/aggregate-to-monitoring: 'true'
+            
+            Automatically includes all permissions from
+            ClusterRoles with matching labels"]
+        end
+    end

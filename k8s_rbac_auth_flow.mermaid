@@ -1,0 +1,240 @@
+%%{init: {'theme':'dark', 'themeVariables': { 
+    'primaryColor': '#326CE5', 
+    'primaryBorderColor': '#2857A4',
+    'primaryTextColor': '#fff',
+    'secondaryColor': '#F58220',
+    'lineColor': '#CCCCCC',
+    'tertiaryColor': '#28A745',
+    'textColor': '#CCCCCC',
+    'background': '#282a36'
+}}}%%
+
+flowchart TB
+    %% Main title
+    title["Kubernetes RBAC: Authorization Flow and Decision Process"]
+    
+    %% Request entry point
+    request["API Request
+    User: john@example.com
+    Verb: list
+    Resource: pods
+    Namespace: production"]
+    
+    %% Kubernetes API Server
+    subgraph API_SERVER["API Server"]
+        direction TB
+        
+        subgraph AUTHENTICATION["Authentication"]
+            direction TB
+            
+            auth_modules["Authentication Modules:
+            - X.509 Client Certs
+            - Bearer Tokens
+            - OpenID Connect
+            - Webhook Token Auth"]
+            
+            user_info["User Info:
+            - Username: john@example.com
+            - UID: john-123
+            - Groups: dev-team, operations"]
+        end
+        
+        subgraph AUTHORIZATION["Authorization"]
+            direction TB
+            
+            auth_modules2["Authorization Modules:
+            - Node
+            - ABAC
+            - RBAC (Focus)
+            - Webhook"]
+            
+            rbac_check["RBAC Check:
+            1. Find all RoleBindings and ClusterRoleBindings
+               that reference the user/groups
+            2. Collect all referenced Roles and ClusterRoles
+            3. Check if any role permits the requested action"]
+            
+            decision["Decision:
+            - Allowed or Denied
+            - Caching for performance"]
+        end
+        
+        subgraph ADMISSION["Admission Control"]
+            direction TB
+            
+            admission_modules["Admission Webhooks
+            (after authorization)"]
+        end
+        
+        AUTHENTICATION --> AUTHORIZATION --> ADMISSION
+    end
+    
+    %% RBAC rules storage
+    subgraph RBAC_RULES["RBAC Rules in etcd"]
+        direction TB
+        
+        subgraph ROLES_DB["Roles"]
+            role1["Role: pod-viewer
+            namespace: production
+            resources: pods
+            verbs: get, list, watch"]
+            
+            role2["Role: pod-editor
+            namespace: production
+            resources: pods
+            verbs: create, update, patch, delete"]
+        end
+        
+        subgraph CLUSTERROLES_DB["ClusterRoles"]
+            cr1["ClusterRole: view
+            resources: many, incl. pods
+            verbs: get, list, watch"]
+            
+            cr2["ClusterRole: edit
+            resources: many, incl. pods
+            verbs: get, list, watch, create, update,
+            patch, delete"]
+            
+            cr3["ClusterRole: cluster-admin
+            resources: *
+            verbs: *"]
+        end
+        
+        subgraph BINDINGS_DB["Bindings"]
+            rb1["RoleBinding: dev-pod-viewers
+            namespace: production
+            subjects: 
+              - group: dev-team
+            roleRef: pod-viewer"]
+            
+            rb2["RoleBinding: ops-pod-editors
+            namespace: production
+            subjects: 
+              - group: operations
+            roleRef: pod-editor"]
+            
+            crb1["ClusterRoleBinding: john-view
+            subjects:
+              - user: john@example.com
+            roleRef: view"]
+        end
+    end
+    
+    %% Detailed authorization process
+    subgraph AUTH_PROCESS["Authorization Process Details"]
+        direction TB
+        
+        step1["1. Identify Subject:
+        - Username: john@example.com
+        - Groups: dev-team, operations"]
+        
+        step2["2. Find applicable bindings:
+        - RoleBinding: dev-pod-viewers (via dev-team group)
+        - RoleBinding: ops-pod-editors (via operations group)
+        - ClusterRoleBinding: john-view (via username)"]
+        
+        step3["3. Collect relevant roles:
+        - Role: pod-viewer (from dev-pod-viewers)
+        - Role: pod-editor (from ops-pod-editors)
+        - ClusterRole: view (from john-view)"]
+        
+        step4["4. Evaluate permissions:
+        Check if any role allows:
+        - Verb: list
+        - Resource: pods
+        - Namespace: production"]
+        
+        step5["5. Make decision:
+        - All three roles allow list pods
+        - Result: ALLOW"]
+        
+        step1 --> step2 --> step3 --> step4 --> step5
+    end
+    
+    %% Flow examples
+    subgraph EXAMPLES["Authorization Flow Examples"]
+        direction TB
+        
+        allowed["Allowed Request:
+        - User: john@example.com
+        - Verb: list
+        - Resource: pods
+        - Namespace: production
+        - Result: ALLOW (via pod-viewer role)"]
+        
+        denied["Denied Request:
+        - User: john@example.com
+        - Verb: delete
+        - Resource: pods
+        - Namespace: kube-system
+        - Result: DENY (no binding gives this permission)"]
+        
+        cluster_wide["Cluster-Wide Request:
+        - User: admin@example.com
+        - Verb: list
+        - Resource: nodes
+        - Result: ALLOW (via cluster-admin role)"]
+    end
+    
+    %% Connection illustration
+    subgraph RESOURCE_RULES["Resource Rules Structure"]
+        direction TB
+        
+        rule_structure["Rule Structure in Role/ClusterRole:
+        
+        rules:
+        - apiGroups: ['']
+          resources: ['pods']
+          verbs: ['get', 'list', 'watch']
+          
+        - apiGroups: ['apps']
+          resources: ['deployments']
+          verbs: ['get', 'list']
+          
+        - apiGroups: ['']
+          resources: ['pods/log']
+          verbs: ['get']"]
+        
+        resource_scope["Resource Scopes:
+        
+        - Namespaced Resources:
+          pods, services, configmaps, secrets,
+          deployments, statefulsets, etc.
+          
+        - Cluster-scoped Resources:
+          nodes, persistentvolumes, 
+          namespaces, clusterroles, etc."]
+    end
+    
+    %% Policy tips
+    subgraph POLICY_TIPS["RBAC Policy Best Practices"]
+        direction TB
+        
+        least_privilege["Least Privilege:
+        - Grant minimal permissions needed
+        - Avoid wildcards (* resources, * verbs)
+        - Regularly audit permissions"]
+        
+        separation["Separation by Namespace:
+        - Isolate teams in separate namespaces
+        - Use namespace admins for delegation"]
+        
+        sa_scope["ServiceAccount Scope:
+        - One ServiceAccount per workload
+        - Don't share ServiceAccounts
+        - Scope permissions tightly"]
+        
+        default_roles["Use Default Roles:
+        - view: read-only access
+        - edit: modify resources but not RBAC
+        - admin: full control within namespace
+        - cluster-admin: full control of cluster"]
+    end
+    
+    %% Logical connections
+    request --> API_SERVER
+    RBAC_RULES --> rbac_check
+    rbac_check --> AUTH_PROCESS
+    AUTH_PROCESS --> EXAMPLES
+    RESOURCE_RULES -.-> rbac_check
+    POLICY_TIPS -.-> RBAC_RULES

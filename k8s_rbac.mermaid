@@ -1,0 +1,249 @@
+%%{init: {'theme':'dark', 'themeVariables': { 
+    'primaryColor': '#326CE5', 
+    'primaryBorderColor': '#2857A4',
+    'primaryTextColor': '#fff',
+    'secondaryColor': '#F58220',
+    'lineColor': '#CCCCCC',
+    'tertiaryColor': '#28A745',
+    'textColor': '#CCCCCC',
+    'background': '#282a36'
+}}}%%
+
+flowchart TB
+    %% Main container for RBAC
+    subgraph K8S["Kubernetes RBAC System"]
+        direction TB
+        
+        %% Authentication section
+        subgraph AUTH["Authentication"]
+            direction TB
+            
+            subgraph AUTH_METHODS["Authentication Methods"]
+                direction LR
+                x509["X.509 Certificates"]
+                token["Static Tokens"]
+                oidc["OpenID Connect"]
+                sa["Service Accounts"]
+            end
+            
+            api_auth["API Server Authentication"]
+            authn_chain["Authentication Chain"]
+            
+            subgraph USERS["Users (External)"]
+                direction LR
+                human["Human Users"]
+                external["External Systems"]
+            end
+            
+            subgraph SA_SECTION["Service Account Details"]
+                direction TB
+                
+                sa_resource["ServiceAccount
+                namespace: default
+                name: app-sa"]
+                
+                sa_token["Service Account Token
+                (JWT Token)"]
+                
+                sa_secret["Secret
+                type: kubernetes.io/service-account-token
+                serviceAccountName: app-sa"]
+                
+                sa_mount["Mounted in Pod:
+                /var/run/secrets/kubernetes.io/serviceaccount/token"]
+            end
+            
+            AUTH_METHODS --> api_auth
+            api_auth --> authn_chain
+            USERS --> api_auth
+            
+            sa --> SA_SECTION
+            sa_resource --- sa_token
+            sa_token --- sa_secret
+        end
+        
+        %% Authorization section
+        subgraph AUTHZ["Authorization"]
+            direction TB
+            
+            subgraph RBAC_RESOURCES["RBAC Resources"]
+                direction TB
+                
+                subgraph ROLE_RESOURCES["Namespace Scope"]
+                    direction LR
+                    role["Role"]
+                    role_binding["RoleBinding"]
+                end
+                
+                subgraph CLUSTER_RESOURCES["Cluster Scope"]
+                    direction LR
+                    cluster_role["ClusterRole"]
+                    cluster_role_binding["ClusterRoleBinding"]
+                end
+                
+                subgraph ROLE_DEFINITION["Role Definition Example"]
+                    direction TB
+                    role_yaml["Role YAML:
+                    kind: Role
+                    metadata:
+                      name: pod-reader
+                      namespace: default
+                    rules:
+                    - apiGroups: ['']
+                      resources: ['pods']
+                      verbs: ['get', 'list', 'watch']"]
+                end
+                
+                subgraph CRB_DEFINITION["ClusterRoleBinding Example"]
+                    direction TB
+                    crb_yaml["ClusterRoleBinding YAML:
+                    kind: ClusterRoleBinding
+                    metadata:
+                      name: admin-user
+                    subjects:
+                    - kind: ServiceAccount
+                      name: admin-sa
+                      namespace: kube-system
+                    roleRef:
+                      kind: ClusterRole
+                      name: cluster-admin
+                      apiGroup: rbac.authorization.k8s.io"]
+                end
+            end
+            
+            api_authz["API Server Authorization"]
+            
+            ROLE_RESOURCES -- "Reference" --> ROLE_DEFINITION
+            CLUSTER_RESOURCES -- "Reference" --> CRB_DEFINITION
+            
+            RBAC_RESOURCES --> api_authz
+        end
+        
+        %% Admin section
+        subgraph ADMIN["Administration"]
+            direction TB
+            
+            subgraph BEST_PRACTICES["Best Practices"]
+                direction TB
+                principle_lp["Principle of Least Privilege"]
+                ns_separation["Namespace Separation"]
+                sa_isolation["Service Account Isolation"]
+                no_wildcards["Avoid Wildcard Permissions"]
+            end
+            
+            kubectl_rbac["kubectl RBAC Commands:
+            - kubectl create role
+            - kubectl create rolebinding
+            - kubectl create clusterrole
+            - kubectl create clusterrolebinding
+            - kubectl auth can-i <verb> <resource>"]
+            
+            subgraph DEFAULT_ROLES["Default ClusterRoles"]
+                direction LR
+                view["view"]
+                edit["edit"]
+                admin["admin"]
+                cluster_admin["cluster-admin"]
+            end
+        end
+        
+        %% Resources and Permissions section
+        subgraph RESOURCES["K8s Resources & Permissions"]
+            direction TB
+            
+            subgraph API_GROUPS["API Groups"]
+                direction LR
+                core["core ('')"]
+                apps["apps"]
+                batch["batch"]
+                rbac["rbac.authorization.k8s.io"]
+                networking["networking.k8s.io"]
+            end
+            
+            subgraph RESOURCE_TYPES["Common Resource Types"]
+                direction LR
+                pods["pods"]
+                deployments["deployments"]
+                services["services"]
+                configmaps["configmaps"]
+                secrets["secrets"]
+            end
+            
+            subgraph VERBS["Permission Verbs"]
+                direction TB
+                read["Read operations:
+                - get
+                - list
+                - watch"]
+                
+                write["Write operations:
+                - create
+                - update
+                - patch
+                - delete"]
+                
+                special["Special operations:
+                - deletecollection
+                - impersonate"]
+            end
+        end
+        
+        %% Access Review section
+        subgraph PROCESS["Access Review Process"]
+            direction LR
+            
+            request["Request:
+            1. User/SA
+            2. Verb
+            3. Resource
+            4. Namespace"]
+            
+            auth_check["Authentication & 
+            Authorization Check"]
+            
+            decision["Decision:
+            Allow or Deny"]
+            
+            request --> auth_check --> decision
+        end
+    end
+    
+    %% Flow between components
+    AUTH --> AUTHZ
+    AUTHZ --> PROCESS
+    RESOURCES --> PROCESS
+    ADMIN -.-> AUTHZ
+    
+    %% Detailed connections
+    authn_chain -- "Authenticated Identity" --> api_authz
+    role_binding -- "References Role" --> role
+    role_binding -- "References Subjects" --> human & sa_resource
+    cluster_role_binding -- "References ClusterRole" --> cluster_role
+    cluster_role_binding -- "References Subjects" --> human & sa_resource
+    
+    %% Cross-namespace binding
+    role_binding -- "Can reference ClusterRole (namespace-scoped)" --> cluster_role
+    
+    %% Resource and Permission relations
+    API_GROUPS -- "Contains" --> RESOURCE_TYPES
+    RESOURCE_TYPES -- "Controlled by" --> VERBS
+    
+    %% Practical example flow
+    subgraph EXAMPLE["Example: Pod Access Flow"]
+        direction TB
+        
+        user_req["User request to list pods"]
+        auth_flow["Authentication & 
+        Authorization flow"]
+        rbac_check["RBAC check:
+        - Is user authenticated?
+        - Does user have 'list' permission on 'pods'?
+        - In the target namespace?"]
+        
+        result["Result: 
+        Allow or Deny Access"]
+        
+        user_req --> auth_flow --> rbac_check --> result
+    end
+    
+    PROCESS -- "Follows" --> EXAMPLE
